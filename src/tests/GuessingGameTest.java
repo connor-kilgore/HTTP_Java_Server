@@ -5,80 +5,93 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class GuessingGameTest {
 
     @Test
-    public void testSendEndCondition() {
+    public void testParametersConstructor() {
+        GuessingGame gg = new GuessingGame(new String[]
+                {"number=22",
+                "number-to-guess=80",
+                "guesses-left=5"});
+
+        assertEquals(22, gg.getNumber());
+        assertEquals(80, gg.getAnswer());
+        assertEquals(4, gg.getGuesses());
+    }
+
+    @Test
+    public void testParametersDefaultValuesConstructor() {
+        GuessingGame gg = new GuessingGame(new String[]
+                {"fake-number=22",
+                "answer=80",
+                "guesses-i-have-left=5"});
+
+        assertEquals(50, gg.getNumber());
+        assertEquals(50, gg.getAnswer());
+        assertEquals(7, gg.getGuesses());
+    }
+
+    @Test
+    public void testInitializeConstructor() {
+        GuessingGame gg = new GuessingGame(90,
+                20,
+                3);
+
+        assertEquals(90, gg.getNumber());
+        assertEquals(20, gg.getAnswer());
+        assertEquals(2, gg.getGuesses());
+    }
+
+    @Test
+    public void testDefaultConstructor() {
         GuessingGame gg = new GuessingGame();
-        assertEquals("<!DOCTYPE html><html><head><title>" +
-                " Java HTTP Core.Server </title></head><body><br><br>" +
-                "<div><h3>You Won!</h3></div></body></html>",
-                gg.getEndCondition("You Won!"));
-    }
 
-    @Test
-    public void testGetNumber() {
-        String[] parameters = {"number=22", "other=5"};
-        assertEquals(22, GuessingGame.getNumber(parameters));
-    }
-
-    @Test
-    public void testGetNumberNoInput() {
-        String[] parameters = {"fake-number=22", "other=5"};
-        assertEquals(50, GuessingGame.getNumber(parameters));
-    }
-
-    @Test
-    public void testGetAnswer() {
-        String[] parameters = {"number-to-guess=22", "other=5"};
-        assertEquals(22, GuessingGame.getAnswer(parameters));
-    }
-
-    @Test
-    public void testGetAnswerNoInput() {
-        String[] parameters = {"answer=22", "other=5"};
-        assertEquals(50, GuessingGame.getAnswer(parameters));
-    }
-
-    @Test
-    public void testGetGuesses() {
-        String[] parameters = {"guesses-left=22", "other=5"};
-        assertEquals(22, GuessingGame.getGuesses(parameters));
-    }
-
-    @Test
-    public void testGetGuessesNoInput() {
-        String[] parameters = {"answer=22", "other=5"};
-        assertEquals(7, GuessingGame.getGuesses(parameters));
+        assertEquals(-1, gg.getNumber());
+        assertEquals(7, gg.getGuesses());
+        assertNotEquals(0, gg.getAnswer());
     }
 
     @Test
     public void testGetHintNoNumber(){
-        int number = -1;
-        int answer = 5;
-        assertEquals("", GuessingGame.getHint(number, answer));
+        GuessingGame gg = new GuessingGame(-1, 5, 7);
+        assertEquals("", gg.getHint());
     }
 
     @Test
     public void testGetHintCorrect(){
-        int number = 5;
-        int answer = 5;
-        assertEquals("Correct!", GuessingGame.getHint(number, answer));
+        GuessingGame gg = new GuessingGame(5, 5, 6);
+        assertEquals("Correct!", gg.getHint());
     }
 
     @Test
     public void testGetHintLowerNum(){
-        int number = 2;
-        int answer = 5;
-        assertEquals("Guess Higher!", GuessingGame.getHint(number, answer));
+        GuessingGame gg = new GuessingGame(2, 5, 6);
+        assertEquals("Guess Higher!", gg.getHint());
     }
 
     @Test
     public void testGetHintHigherNum(){
-        int number = 8;
-        int answer = 5;
-        assertEquals("Guess Lower!", GuessingGame.getHint(number, answer));
+        GuessingGame gg = new GuessingGame(8, 5, 6);
+        assertEquals("Guess Lower!", gg.getHint());
+    }
+
+    @Test
+    public void testGetEndConditionNoEnd(){
+        GuessingGame gg = new GuessingGame(8, 5, 6);
+        assertEquals("", gg.getEndCondition());
+    }
+
+    @Test
+    public void testGetEndConditionWon(){
+        GuessingGame gg = new GuessingGame(5, 5, 6);
+        assertEquals("You Won!", gg.getEndCondition());
+    }
+
+    @Test
+    public void testGetEndConditionLoss(){
+        GuessingGame gg = new GuessingGame(8, 5, 0);
+        assertEquals("You Failed!", gg.getEndCondition());
     }
 }

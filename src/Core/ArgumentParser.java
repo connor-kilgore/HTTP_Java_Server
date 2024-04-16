@@ -21,7 +21,7 @@ public class ArgumentParser {
                 return args[i + 1];
             }
         }
-        return "website";
+        return ".";
     }
 
 

@@ -1,5 +1,6 @@
 package Core;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -7,23 +8,66 @@ import java.util.concurrent.Executors;
 
 public class Server {
 
-    int port;
-    String root;
+    private final ExecutorService threadPool;
+    private final int port;
     private static final int THREAD_POOL_SIZE = 25;
+    private boolean isRunning = false;
+    private final HandlerFactory handlerFactory;
+    private final ResponseFactory responseFactory;
+    private final RPFactory rpFactory;
 
-    public Server(int port, String root) {
+    public Server(int port, HandlerFactory handler,
+                  ResponseFactory responseFactory, RPFactory rpFactory) {
         this.port = port;
-        this.root = root;
+        this.handlerFactory = handler;
+        this.responseFactory = responseFactory;
+        this.rpFactory = rpFactory;
+
+        threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
     }
 
-    public void startServer() throws Exception {
-        try (ServerSocket sSocket = new ServerSocket(port)) {
-            ExecutorService threadPool = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
-            System.out.println("\nRunning server...\nPort: " + port + " Root: " + root);
-            while (true) {
-                Socket client = sSocket.accept();
-                threadPool.submit(new Client(client, root));
+    public int getPort() {
+        return port;
+    }
+
+    public HandlerFactory getHandlerFactory() {
+        return handlerFactory;
+    }
+
+    public ResponseFactory getResponseFactory() {
+        return responseFactory;
+    }
+
+    public RPFactory getRPFactory() {
+        return rpFactory;
+    }
+
+    public ExecutorService getThreadPool() {
+        return threadPool;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
+    }
+
+    public void stop() {
+        isRunning = false;
+    }
+
+    public void start() {
+        new Thread(() -> {
+            try (ServerSocket sSocket = new ServerSocket(port)) {
+                isRunning = true;
+                System.out.println("\nRunning server...\nPort: " + port +
+                        " Root: " + responseFactory.getRoot());
+                while (isRunning) {
+                    Socket client = sSocket.accept();
+                    RequestParser rp = rpFactory.newRP(client);
+                    threadPool.submit(handlerFactory.newHandler(responseFactory, rp));
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        }
+        }).start();
     }
 }

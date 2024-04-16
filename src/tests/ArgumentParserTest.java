@@ -40,7 +40,7 @@ public class ArgumentParserTest {
     @Test
     public void testNoPath() {
         String[] args = {};
-        assertEquals("website", ArgumentParser.getPath(args));
+        assertEquals(".", ArgumentParser.getPath(args));
     }
 
     @Test
@@ -52,7 +52,7 @@ public class ArgumentParserTest {
     @Test
     public void testInvalidPathOrder() {
         String[] args = {"fileOne/fileTwo", "-r"};
-        assertEquals("website", ArgumentParser.getPath(args));
+        assertEquals(".", ArgumentParser.getPath(args));
     }
 
     @Test

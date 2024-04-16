@@ -1,74 +1,142 @@
 package tests;
 
-import Core.Client;
-import Core.RequestParser;
+import Core.ClientRPFactory;
+import Core.ClientRequestParser;
+import Core.Server;
+import Core.SocketHandlerFactory;
+import mock.MockResponseFactory;
 import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.InputStream;
+import java.net.Socket;
 
 import static org.junit.Assert.assertEquals;
 
 public class RequestParserTest {
     @Test
-    public void testBuildRequest() throws IOException {
-        String input = """
-                GET / HTTP/1.1
-                Content-Length: 7
-                
-                content""";
-        BufferedReader request = new BufferedReader(new StringReader(input));
-
-        assertEquals(input, RequestParser.buildRequest(request));
+    public void testConstructor() throws IOException {
+        Socket client = new Socket();
+        ClientRequestParser rp = new ClientRequestParser(client);
+        assertEquals(client, rp.getSocket());
+        assertEquals("", rp.getRequest());
     }
 
     @Test
-    public void testRootFile() {
-        String path = "/";
-        assertEquals(new File("website/index.html"), RequestParser.getFile(path, "website"));
+    public void testBuildBody() throws Exception {
+        String input = "GET / HTTP/1.1\r\nContent-Length: 7\r\nHost: localhost\r\n\r\ncontent";
+
+        Server server = new Server(127, new SocketHandlerFactory(),
+                new MockResponseFactory("foo"), new ClientRPFactory());
+        server.start();
+        Thread.sleep(10);
+
+        try (Socket socket = new Socket("localhost", 127)) {
+            socket.getOutputStream().write(input.getBytes());
+            InputStream is = socket.getInputStream();
+
+            StringBuilder str = new StringBuilder();
+            for(int i = 0; i < input.length() - 4; i++)
+            {
+                str.append((char) is.read());
+            }
+
+            assertEquals("GET / HTTP/1.1\n" +
+                    "Content-Length: 7\n" +
+                    "Host: localhost\n" +
+                    "\n" +
+                    "content", str.toString());
+        }
     }
 
     @Test
-    public void testGetRoot() {
-        String path = "GET /guess HTTP/1.1";
-        assertEquals("/guess", RequestParser.getRoot(path));
+    public void testBuildBodyNoContent() throws Exception {
+        String input = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n";
+
+        Server server = new Server(128, new SocketHandlerFactory(),
+                new MockResponseFactory("foo"), new ClientRPFactory());
+        server.start();
+        Thread.sleep(10);
+
+        try (Socket socket = new Socket("localhost", 128)) {
+            socket.getOutputStream().write(input.getBytes());
+            InputStream is = socket.getInputStream();
+
+            String str = "";
+            for(int i = 0; i < input.length() - 3; i++)
+            {
+                str += (char) is.read();
+            }
+
+            assertEquals("GET / HTTP/1.1\n" +
+                    "Host: localhost\n\n", str);
+        }
     }
 
     @Test
-    public void testGetRequestType() {
-        String path = "GET /guess HTTP/1.1";
-        assertEquals("GET", RequestParser.getRequestType(path));
+    public void testSetRequest() throws IOException {
+        String request = "GET /guess HTTP/1.1";
+        ClientRequestParser rp = new ClientRequestParser(null);
+        rp.setRequest(request);
+        assertEquals(request, rp.getRequest());
     }
 
     @Test
-    public void testGetFile() {
-        String path = "/no-index/test.txt";
-        assertEquals(new File("website/no-index/test.txt"), RequestParser.getFile(path, "website"));
+    public void testGetRequestType() throws IOException {
+        String request = "GET /guess HTTP/1.1";
+        ClientRequestParser rp = new ClientRequestParser(null);
+        rp.setRequest(request);
+        assertEquals("GET", rp.getRequestType());
     }
 
     @Test
-    public void testDirectoryWithIndex() {
-        String path = "/hello";
-        assertEquals(new File("website/hello/index.html"), RequestParser.getFile(path, "website"));
+    public void testGetPath() throws IOException {
+        String request = "GET /guess HTTP/1.1";
+        ClientRequestParser rp = new ClientRequestParser(null);
+        rp.setRequest(request);
+        assertEquals("/guess", rp.getPath());
     }
 
     @Test
-    public void testDirectoryWithoutIndex() {
-        String path = "/no-index";
-        assertEquals(new File("website/no-index"), RequestParser.getFile(path, "website"));
-    }
-
-    @Test
-    public void testGetParameters()
-    {
+    public void testGetParameters() throws IOException {
         String request = "GET /guess HTTP/1.1\n" +
                 "Host: localhost\n\n" +
-                "number=5&my-name=bob";
+                "number=5&my-name=bob\n";
+        ClientRequestParser rp = new ClientRequestParser(null);
+        rp.setRequest(request);
         String[] answer = {"number=5", "my-name=bob"};
-        assertEquals(answer, RequestParser.getParameters(request));
+        assertEquals(answer, rp.getParameters());
 
     }
+
+    @Test
+    public void testGetFile() throws IOException {
+        String request = "GET /no-index/test.txt HTTP/1.1\n";
+        ClientRequestParser rp = new ClientRequestParser(null);
+        rp.setRequest(request);
+        assertEquals(new File("website/no-index/test.txt"), rp.getFile("website"));
+    }
+
+    @Test
+    public void testDirectoryWithIndex() throws IOException {
+        String request = "GET /hello HTTP/1.1\n";
+        ClientRequestParser rp = new ClientRequestParser(null);
+        rp.setRequest(request);
+        assertEquals(new File("website/hello/index.html"), rp.getFile("website"));
+        request = "GET / HTTP/1.1\n";
+        rp.setRequest(request);
+        assertEquals(new File("./index.html"), rp.getFile("."));
+    }
+
+    @Test
+    public void testDirectoryWithoutIndex() throws IOException {
+        String request = "GET /no-index HTTP/1.1\n";
+        ClientRequestParser rp = new ClientRequestParser(null);
+        rp.setRequest(request);
+        assertEquals(new File("website/no-index"), rp.getFile("website"));
+    }
+
+
 
 }
