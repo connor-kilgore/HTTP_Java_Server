@@ -6,59 +6,87 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class ArgumentParserTest {
+    @Test
+    public void testConstructor() {
+        String[] args = {"-p", "90", "-r", "fileOne/fileTwo", "-x"};
+        ArgumentParser ap = new ArgumentParser(args);
+        assertEquals(90, ap.getPort());
+        assertEquals("fileOne/fileTwo", ap.getRoot());
+        assertTrue(ap.getConfigFlag());
+    }
 
     @Test
     public void testPort90() {
         String[] args = {"-p", "90"};
-        assertEquals(90, ArgumentParser.getPort(args));
+        ArgumentParser ap = new ArgumentParser(args);
+        assertEquals(90, ap.findPort(args));
     }
 
     @Test
     public void testNoPort() {
         String[] args = {};
-        assertEquals(80, ArgumentParser.getPort(args));
+        ArgumentParser ap = new ArgumentParser(args);
+        assertEquals(80, ap.findPort(args));
     }
 
     @Test
     public void testInvalidPort() {
         String[] args = {"-p", "not-a-real-port"};
-        assertEquals(80, ArgumentParser.getPort(args));
+        ArgumentParser ap = new ArgumentParser(args);
+        assertEquals(80, ap.findPort(args));
     }
 
     @Test
     public void testInvalidPortOrder() {
         String[] args = {"40", "-p"};
-        assertEquals(80, ArgumentParser.getPort(args));
+        ArgumentParser ap = new ArgumentParser(args);
+        assertEquals(80, ap.findPort(args));
     }
 
     @Test
     public void testDifferentArgsForPort() {
         String[] args = {"-r", "my-path/path", "-p", "120", "random flag"};
-        assertEquals(120, ArgumentParser.getPort(args));
+        ArgumentParser ap = new ArgumentParser(args);
+        assertEquals(120, ap.findPort(args));
     }
 
     @Test
     public void testNoPath() {
         String[] args = {};
-        assertEquals(".", ArgumentParser.getPath(args));
+        ArgumentParser ap = new ArgumentParser(args);
+        assertEquals(".", ap.findRoot(args));
     }
 
     @Test
     public void testPath() {
         String[] args = {"-r", "fileOne/fileTwo"};
-        assertEquals("fileOne/fileTwo", ArgumentParser.getPath(args));
+        ArgumentParser ap = new ArgumentParser(args);
+        assertEquals("fileOne/fileTwo", ap.findRoot(args));
     }
 
     @Test
     public void testInvalidPathOrder() {
         String[] args = {"fileOne/fileTwo", "-r"};
-        assertEquals(".", ArgumentParser.getPath(args));
+        ArgumentParser ap = new ArgumentParser(args);
+        assertEquals(".", ap.findRoot(args));
     }
 
     @Test
     public void testDifferentArgsForPath() {
         String[] args = {"-p", "120", "-r", "my-path/path", "random flag"};
-        assertEquals("my-path/path", ArgumentParser.getPath(args));
+        ArgumentParser ap = new ArgumentParser(args);
+        assertEquals("my-path/path", ap.findRoot(args));
+    }
+
+    @Test
+    public void testFindFlag(){
+        String[] args = {"-p", "120", "-r", "my-path/path", "-x"};
+        ArgumentParser ap = new ArgumentParser(args);
+        assertTrue(ap.findFlag(args, "-x"));
+
+        String[] args2 = {"-p", "120", "-r", "my-path/path"};
+        ArgumentParser ap2 = new ArgumentParser(args2);
+        assertFalse(ap2.findFlag(args2, "-x"));
     }
 
 }

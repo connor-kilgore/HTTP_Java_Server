@@ -12,8 +12,9 @@ public interface RequestParser {
     public Socket getSocket();
 
     public String getPath();
-
-    public String[] getParameters();
+    public String[] getPathParams();
+    public void setRequest(String request);
+    public byte[] getContent();
     public String getRequest();
     public File getFile(String root);
 }

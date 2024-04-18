@@ -11,7 +11,7 @@ public class MockRequestParser implements RequestParser {
 
     Socket clientSocket;
     public String request;
-    public MockRequestParser (Socket clientSocket) throws IOException {
+    public MockRequestParser (Socket clientSocket) {
         this.clientSocket = clientSocket;
         this.request = "";
     }
@@ -40,8 +40,15 @@ public class MockRequestParser implements RequestParser {
         return null;
     }
 
-    public String[] getParameters() {
-        return new String[0];
+    public String[] getPathParams() {
+        return null;
+    }
+
+    public void setRequest(String request) {
+    }
+
+    public byte[] getContent() {
+        return new byte[]{};
     }
 
     public String getRequest() {

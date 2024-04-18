@@ -9,8 +9,9 @@ public class ClientRequestParser implements RequestParser {
 
     Socket clientSocket;
     public String request;
+    byte[] content;
 
-    public ClientRequestParser(Socket clientSocket) throws IOException {
+    public ClientRequestParser(Socket clientSocket){
         this.clientSocket = clientSocket;
         this.request = "";
     }
@@ -34,10 +35,13 @@ public class ClientRequestParser implements RequestParser {
         return contentLen;
     }
 
-    public void buildContent(StringBuilder str, int contentLen) throws IOException {
+    public void buildContent(int contentLen) throws IOException {
+        content = new byte[contentLen];
         InputStream is = clientSocket.getInputStream();
+        int i = 0;
         while (contentLen > 0) {
-            str.append((char) is.read());
+            content[i] = (byte)is.read();
+            i++;
             contentLen--;
         }
     }
@@ -53,7 +57,7 @@ public class ClientRequestParser implements RequestParser {
     public void buildBody() throws IOException {
         StringBuilder str = new StringBuilder();
         int contentLen = buildHead(str);
-        buildContent(str, contentLen);
+        buildContent(contentLen);
         request = str.toString(); // TODO
     }
 
@@ -64,13 +68,22 @@ public class ClientRequestParser implements RequestParser {
     public String getPath() {
         return request.split(" ")[1].split("\\?")[0];
     }
+    public String[] getPathParams() {
+        String requestPath = request.split(" ")[1];
+        int i;
+        if ((i = requestPath.indexOf('?')) != -1 && i != requestPath.length() - 1) {
+            return requestPath.split("\\?")[1].split("&");
+        }
+        else
+            return new String[] {};
+    }
 
     public String getRequestType() {
         return request.split(" ")[0];
     }
 
-    public String[] getParameters() {
-        return request.split("\n\n")[1].split("\n")[0].split("&");
+    public byte[] getContent() {
+        return content;
     }
 
     public File getFile(String root) {

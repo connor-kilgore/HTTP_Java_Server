@@ -1,10 +1,10 @@
 package tests;
 
+import Core.ArgumentParser;
 import Core.Server;
 import Core.SocketHandlerFactory;
 import mock.MockHandlerFactory;
 import mock.MockRPFactory;
-import mock.MockRequestParser;
 import mock.MockResponseFactory;
 import org.junit.Test;
 
@@ -18,9 +18,11 @@ public class ServerTest {
     public void testConstructor() {
         SocketHandlerFactory hf = new SocketHandlerFactory();
         MockResponseFactory rf = new MockResponseFactory("foo");
+        String[] args = {"-p", "90", "-r", ".", "-x"};
+        ArgumentParser ap = new ArgumentParser(args);
         MockRPFactory rpf = new MockRPFactory();
-        Server server = new Server(123, hf, rf, rpf);
-        assertEquals(123, server.getPort());
+        Server server = new Server(ap, hf, rf, rpf);
+        assertEquals(ap, server.getArgumentParser());
         assertEquals(hf, server.getHandlerFactory());
         assertEquals(rf, server.getResponseFactory());
         assertEquals(rpf, server.getRPFactory());
@@ -29,8 +31,10 @@ public class ServerTest {
 
     @Test
     public void startAndStop() throws Exception{
-        Server server = new Server(123, new SocketHandlerFactory(),
-                new MockResponseFactory("foo"), new MockRPFactory());
+        String[] args = {"-p", "123", "-r", "."};
+        ArgumentParser ap = new ArgumentParser(args);
+        Server server = new Server(ap, new SocketHandlerFactory(),
+                new MockResponseFactory(ap.getRoot()), new MockRPFactory());
         server.start();
         Thread.sleep(10);
         assertTrue(server.isRunning());
@@ -40,8 +44,10 @@ public class ServerTest {
 
     @Test
     public void connection() throws Exception{
-        Server server = new Server(124, new MockHandlerFactory(),
-                new MockResponseFactory("foo"), new MockRPFactory());
+        String[] args = {"-p", "124", "-r", "."};
+        ArgumentParser ap = new ArgumentParser(args);
+        Server server = new Server(ap, new MockHandlerFactory(),
+                new MockResponseFactory(ap.getRoot()), new MockRPFactory());
         server.start();
         Thread.sleep(10);
 

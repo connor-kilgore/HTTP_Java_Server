@@ -24,9 +24,10 @@ public class SocketHandlerTest {
 
     @Test
     public void testGetRequest() throws Exception {
-
-        Server server = new Server(125, new SocketHandlerFactory(),
-                new MockResponseFactory("foo"), new MockRPFactory());
+        String[] args = {"-p", "125", "-r", "foo"};
+        ArgumentParser ap = new ArgumentParser(args);
+        Server server = new Server(ap, new SocketHandlerFactory(),
+                new MockResponseFactory(ap.getRoot()), new MockRPFactory());
         server.start();
 
         String request = "GET / HTTP/1.1\n";
@@ -46,9 +47,10 @@ public class SocketHandlerTest {
 
     @Test
     public void testPostRequest() throws Exception {
-
-        Server server = new Server(126, new SocketHandlerFactory(),
-                new MockResponseFactory("foo"), new MockRPFactory());
+        String[] args = {"-p", "126", "-r", "foo"};
+        ArgumentParser ap = new ArgumentParser(args);
+        Server server = new Server(ap, new SocketHandlerFactory(),
+                new MockResponseFactory(ap.getRoot()), new MockRPFactory());
         server.start();
 
         String request = "POST / HTTP/1.1\n";

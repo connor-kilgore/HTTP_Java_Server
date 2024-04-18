@@ -28,8 +28,8 @@ public class GuessingGameTest {
                 "answer=80",
                 "guesses-i-have-left=5"});
 
-        assertEquals(50, gg.getNumber());
-        assertEquals(50, gg.getAnswer());
+        assertEquals(-1, gg.getNumber());
+        assertNotEquals(0, gg.getAnswer());
         assertEquals(7, gg.getGuesses());
     }
 

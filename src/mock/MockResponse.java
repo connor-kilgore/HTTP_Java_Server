@@ -21,6 +21,7 @@ public class MockResponse implements Response {
     }
     public void sendGETResponse() throws IOException {
         clientOutput.write(rp.getRequest().getBytes());
+        clientOutput.write(rp.getContent());
     }
 
     public void sendPOSTResponse() throws IOException {

@@ -12,8 +12,9 @@ public class GuessingGame {
     String hint;
 
     public GuessingGame(String[] parameters) {
-        this.number = getParameter(parameters, "number", 50);
-        this.answer = getParameter(parameters, "number-to-guess", 50);
+        this.number = getParameter(parameters, "number", -1);
+        this.answer = getParameter(parameters, "number-to-guess",
+                (int) ((Math.random() * 100) + 1));
         this.guesses = getParameter(parameters, "guesses-left", 8) - 1;
     }
 
@@ -33,11 +34,11 @@ public class GuessingGame {
         return number;
     }
 
-    public int getAnswer(){
+    public int getAnswer() {
         return answer;
     }
 
-    public int getGuesses(){
+    public int getGuesses() {
         return guesses;
     }
 

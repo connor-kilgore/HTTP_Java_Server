@@ -1,9 +1,6 @@
 package tests;
 
-import Core.ClientRPFactory;
-import Core.ClientRequestParser;
-import Core.Server;
-import Core.SocketHandlerFactory;
+import Core.*;
 import mock.MockResponseFactory;
 import org.junit.Test;
 
@@ -27,8 +24,10 @@ public class RequestParserTest {
     public void testBuildBody() throws Exception {
         String input = "GET / HTTP/1.1\r\nContent-Length: 7\r\nHost: localhost\r\n\r\ncontent";
 
-        Server server = new Server(127, new SocketHandlerFactory(),
-                new MockResponseFactory("foo"), new ClientRPFactory());
+        String[] args = {"-p", "127", "-r", "."};
+        ArgumentParser ap = new ArgumentParser(args);
+        Server server = new Server(ap, new SocketHandlerFactory(),
+                new MockResponseFactory(ap.getRoot()), new ClientRPFactory());
         server.start();
         Thread.sleep(10);
 
@@ -37,16 +36,15 @@ public class RequestParserTest {
             InputStream is = socket.getInputStream();
 
             StringBuilder str = new StringBuilder();
-            for(int i = 0; i < input.length() - 4; i++)
-            {
+            for (int i = 0; i < input.length() - 4; i++) {
                 str.append((char) is.read());
             }
 
             assertEquals("GET / HTTP/1.1\n" +
-                    "Content-Length: 7\n" +
-                    "Host: localhost\n" +
-                    "\n" +
-                    "content", str.toString());
+                         "Content-Length: 7\n" +
+                         "Host: localhost\n" +
+                         "\n" +
+                         "content", str.toString());
         }
     }
 
@@ -54,8 +52,10 @@ public class RequestParserTest {
     public void testBuildBodyNoContent() throws Exception {
         String input = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n";
 
-        Server server = new Server(128, new SocketHandlerFactory(),
-                new MockResponseFactory("foo"), new ClientRPFactory());
+        String[] args = {"-p", "128"};
+        ArgumentParser ap = new ArgumentParser(args);
+        Server server = new Server(ap, new SocketHandlerFactory(),
+                new MockResponseFactory(ap.getRoot()), new ClientRPFactory());
         server.start();
         Thread.sleep(10);
 
@@ -63,14 +63,13 @@ public class RequestParserTest {
             socket.getOutputStream().write(input.getBytes());
             InputStream is = socket.getInputStream();
 
-            String str = "";
-            for(int i = 0; i < input.length() - 3; i++)
-            {
-                str += (char) is.read();
+            StringBuilder str = new StringBuilder();
+            for (int i = 0; i < input.length() - 3; i++) {
+                str.append((char) is.read());
             }
 
             assertEquals("GET / HTTP/1.1\n" +
-                    "Host: localhost\n\n", str);
+                         "Host: localhost\n\n", str.toString());
         }
     }
 
@@ -99,18 +98,6 @@ public class RequestParserTest {
     }
 
     @Test
-    public void testGetParameters() throws IOException {
-        String request = "GET /guess HTTP/1.1\n" +
-                "Host: localhost\n\n" +
-                "number=5&my-name=bob\n";
-        ClientRequestParser rp = new ClientRequestParser(null);
-        rp.setRequest(request);
-        String[] answer = {"number=5", "my-name=bob"};
-        assertEquals(answer, rp.getParameters());
-
-    }
-
-    @Test
     public void testGetFile() throws IOException {
         String request = "GET /no-index/test.txt HTTP/1.1\n";
         ClientRequestParser rp = new ClientRequestParser(null);
@@ -136,7 +123,6 @@ public class RequestParserTest {
         rp.setRequest(request);
         assertEquals(new File("website/no-index"), rp.getFile("website"));
     }
-
 
 
 }
