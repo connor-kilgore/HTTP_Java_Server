@@ -1,18 +1,18 @@
 package mock;
 
 import Core.RequestParser;
-import Core.Response;
+import Core.ResponseDelegator;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public class MockResponse implements Response {
+public class MockResponseDelegator implements ResponseDelegator {
     public final Socket clientSocket;
     public final RequestParser rp;
     public final String root;
     OutputStream clientOutput;
-    public MockResponse(Socket clientSocket, RequestParser rp, String root)
+    public MockResponseDelegator(Socket clientSocket, RequestParser rp, String root)
             throws IOException {
         this.clientSocket = clientSocket;
         this.rp = rp;

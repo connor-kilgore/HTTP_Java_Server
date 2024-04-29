@@ -1,15 +1,11 @@
 package tests;
 
 import Core.*;
-import mock.MockRPFactory;
-import mock.MockResponseFactory;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
-import java.nio.file.Files;
 import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
@@ -21,7 +17,7 @@ public class ResponseTest {
         Socket client = new Socket();
         RequestParser rp = new ClientRequestParser(client);
         String root = ".";
-        Response response = new ClientResponse(client, rp, root);
+        ResponseDelegator response = new ServerResponseDelegator(client, rp, root);
 
         assertEquals(client, response.getClientSocket());
         assertEquals(rp, response.getRequestParser());
@@ -40,8 +36,8 @@ public class ResponseTest {
                         Host: localhost
                                                 
                         """,
-                ClientResponse.convertBytesToString
-                        (ClientResponse.generateResponse(node)));
+                ResponseNode.convertBytesToString
+                        (node.generateResponse()));
 
         status = "HTTP/1.1 404 Not Found";
         node = new ResponseNode(status, headers, "".getBytes());
@@ -52,18 +48,19 @@ public class ResponseTest {
                         Host: localhost
                                                 
                         """,
-                ClientResponse.convertBytesToString(
-                        ClientResponse.generateResponse(node)));
+                ResponseNode.convertBytesToString(
+                        node.generateResponse()));
     }
 
     @Test
     public void testCombineHeadWithContent() {
         byte[] head = {1, 2, 3};
         byte[] content = {4, 5, 6};
+        ResponseNode node = new ResponseNode(null, null, content);
         byte[] answer = {1, 2, 3, 4, 5, 6};
         assertEquals(Arrays.toString(answer),
-                Arrays.toString(ClientResponse.combineHeadWithContent
-                        (head, content)));
+                Arrays.toString(node.combineHeadWithContent
+                        (head)));
     }
 
     @Test
@@ -77,7 +74,7 @@ public class ResponseTest {
         String[] args = {"-p", "134", "-r", "."};
         ArgumentParser ap = new ArgumentParser(args);
         Server server = new Server(ap, new SocketHandlerFactory(),
-                new ClientResponseFactory(ap.getRoot()), new ClientRPFactory());
+                new ServerResponseFactory(ap.getRoot()), new ClientRPFactory());
         server.start();
         Thread.sleep(10);
 
@@ -108,7 +105,7 @@ public class ResponseTest {
         String[] args = {"-p", "138", "-r", "."};
         ArgumentParser ap = new ArgumentParser(args);
         Server server = new Server(ap, new SocketHandlerFactory(),
-                new ClientResponseFactory(ap.getRoot()), new ClientRPFactory());
+                new ServerResponseFactory(ap.getRoot()), new ClientRPFactory());
         server.start();
         Thread.sleep(10);
 

@@ -15,7 +15,7 @@ public class SocketHandlerTest {
     @Test
     public void testConstructor() throws IOException {
         Socket socket = new Socket("localhost", 124);
-        ResponseFactory responseFactory = new ClientResponseFactory(".");
+        ResponseFactory responseFactory = new ServerResponseFactory(".");
         RequestParser rp = new ClientRequestParser(socket);
         SocketHandler client = new SocketHandler(responseFactory, rp);
         assertEquals(socket, client.getClientSocket());

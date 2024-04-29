@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -16,6 +17,7 @@ public class Server {
     private final HandlerFactory handlerFactory;
     private final ResponseFactory responseFactory;
     private final RPFactory rpFactory;
+    private ArrayList<Handler> clients = new ArrayList<>();
 
     private final String HELP_MESSAGE = """
             The HTTP server behaves like a traditional command line tool with options.
@@ -66,6 +68,10 @@ public class Server {
         return threadPool;
     }
 
+    public ArrayList<Handler> getClients() {
+        return clients;
+    }
+
     public boolean isRunning() {
         return isRunning;
     }
@@ -75,24 +81,48 @@ public class Server {
     }
 
     public void start() {
-        if (!ap.getHelpFlag()) {
-            new Thread(() -> {
-                try (ServerSocket sSocket = new ServerSocket(ap.getPort())) {
-                    isRunning = !ap.getConfigFlag();
-                    System.out.println("\nExample Server\nRunning on port: " + ap.getPort() +
-                                       "\nServing files from: " +
-                                       new File(responseFactory.getRoot()).getAbsolutePath() + "\n");
-                    while (isRunning) {
-                        Socket client = sSocket.accept();
-                        RequestParser rp = rpFactory.newRP(client);
-                        threadPool.submit(handlerFactory.newHandler(responseFactory, rp));
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }).start();
-        } else {
+        if (!ap.getHelpFlag())
+            new Thread(this::startServer).start();
+        else
             System.out.println(HELP_MESSAGE);
+    }
+
+    private void startServer() {
+        try (ServerSocket sSocket = initializeServer()) {
+            serverLoop(sSocket);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+    }
+
+    private void serverLoop(ServerSocket sSocket) throws IOException {
+        while (isRunning) {
+            Socket client = acceptClient(sSocket);
+            sendNewClient(client);
+        }
+    }
+
+    public void sendNewClient(Socket client) throws IOException {
+        RequestParser rp = rpFactory.newRP(client);
+        Handler sh = handlerFactory.newHandler(responseFactory, rp);
+        clients.add(sh);
+        threadPool.submit(sh);
+    }
+
+    public ServerSocket initializeServer() throws IOException {
+        printServerInitializeMessage();
+        ServerSocket sSocket = new ServerSocket(ap.getPort());
+        isRunning = !ap.getConfigFlag();
+        return sSocket;
+    }
+
+    private void printServerInitializeMessage() {
+        System.out.println("\nExample Server\nRunning on port: " + ap.getPort() +
+                           "\nServing files from: " +
+                           new File(responseFactory.getRoot()).getAbsolutePath() + "\n");
+    }
+
+    public Socket acceptClient(ServerSocket sSocket) throws IOException {
+        return sSocket.accept();
     }
 }

@@ -16,6 +16,14 @@ public class ArgumentParserTest {
     }
 
     @Test
+    public void testNullArgs() {
+        String[] args = null;
+        ArgumentParser ap = new ArgumentParser(args);
+        assertEquals(80, ap.getPort());
+        assertEquals(".", ap.getRoot());
+    }
+
+    @Test
     public void testPort90() {
         String[] args = {"-p", "90"};
         ArgumentParser ap = new ArgumentParser(args);

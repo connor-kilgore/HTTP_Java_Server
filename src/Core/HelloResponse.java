@@ -1,8 +1,10 @@
 package Core;
 
-public class HelloRequest implements Request{
-    public ResponseNode handleRequest(RequestParser rp, String root){
-        return generateHello();
+import java.io.IOException;
+
+public class HelloResponse implements Response {
+    public void handleResponse(RequestParser rp, String root) throws IOException {
+        generateHello().sendResponse(rp.getSocket());
     }
 
     public void setContentArray(byte[] content) {

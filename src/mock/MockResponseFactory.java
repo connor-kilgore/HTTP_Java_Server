@@ -1,7 +1,7 @@
 package mock;
 
 import Core.RequestParser;
-import Core.Response;
+import Core.ResponseDelegator;
 import Core.ResponseFactory;
 
 import java.io.IOException;
@@ -15,9 +15,9 @@ public class MockResponseFactory implements ResponseFactory {
         this.root = root;
     }
 
-    public Response newResponse(Socket clientSocket, RequestParser rp,
-                                String root) throws IOException {
-        return new MockResponse(clientSocket, rp, root);
+    public ResponseDelegator newResponse(Socket clientSocket, RequestParser rp,
+                                         String root) throws IOException {
+        return new MockResponseDelegator(clientSocket, rp, root);
     }
 
     public String getRoot() {

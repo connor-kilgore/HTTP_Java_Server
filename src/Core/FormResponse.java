@@ -1,12 +1,14 @@
 package Core;
 
-public class FormRequest implements Request{
+import java.io.IOException;
+
+public class FormResponse implements Response {
     private byte[] contentArr;
-    public ResponseNode handleRequest(RequestParser rp, String root) {
+    public void handleResponse(RequestParser rp, String root) throws IOException {
         if (contentArr == null)
-            return generateGETForm(rp);
+            generateGETForm(rp).sendResponse(rp.getSocket());
         else
-            return generatePOSTForm(rp);
+            generatePOSTForm(rp).sendResponse(rp.getSocket());
     }
 
     public void setContentArray(byte[] content) {
@@ -21,12 +23,10 @@ public class FormRequest implements Request{
                          "<html><head><title> Java HTTP Core.Server </title></head>" +
                          "<body><br><br><h2>POST Form</h2>" +
                          "<li>file name: " + FileParser.extractFileName(rp.getContent()) +  "</li>" +
-                         "<li>content type: " + FileParser.extractHeaderValue(rp.getContent(), "Content-Type") + "</li>" +
+                         "<li>content type: " + FileParser.extractHeaderValue(rp.getContent(), "Content-Type")
+                         + "</li>" +
                          "<li>file size: " + FileParser.getFileSize(rp.getContent()) + "</li>" +
                          "</body></html>";
-
-        String dirPath = "/Users/connor_kilgore/Desktop/CleanCoders/" +
-                         "apprenticeship/projects/HTTP_Server/saved-images";
 
         return new ResponseNode(status, headers, content.getBytes());
     }

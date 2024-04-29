@@ -1,8 +1,10 @@
 package Core;
 
-public class GuessingGameRequest implements Request {
+import java.io.IOException;
+
+public class GuessingGameResponse implements Response {
     private String[] parameters;
-    public ResponseNode handleRequest(RequestParser rp, String root) {
+    public void handleResponse(RequestParser rp, String root) throws IOException {
         GuessingGame gg;
 
         if (parameters != null)
@@ -10,7 +12,7 @@ public class GuessingGameRequest implements Request {
         else
             gg = new GuessingGame();
 
-        return updateGuessingGame(gg);
+        updateGuessingGame(gg).sendResponse(rp.getSocket());
     }
 
     public ResponseNode updateGuessingGame(GuessingGame gg){

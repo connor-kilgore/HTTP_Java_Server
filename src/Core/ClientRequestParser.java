@@ -55,10 +55,12 @@ public class ClientRequestParser implements RequestParser {
     }
 
     public void buildBody() throws IOException {
-        StringBuilder str = new StringBuilder();
-        int contentLen = buildHead(str);
-        buildContent(contentLen);
-        request = str.toString(); // TODO
+        if (request.isEmpty()){
+            StringBuilder str = new StringBuilder();
+            int contentLen = buildHead(str);
+            buildContent(contentLen);
+            request = str.toString();
+        }
     }
 
     public Socket getSocket() {

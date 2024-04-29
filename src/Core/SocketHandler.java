@@ -17,15 +17,17 @@ public class SocketHandler implements Handler {
     public Socket getClientSocket() {
         return clientSocket;
     }
-
     public ResponseFactory getResponseFactory() {
         return responseFactory;
+    }
+    public RequestParser getRequestParser(){
+        return rp;
     }
 
     public void handleClient() throws Exception {
         rp.buildBody();
         String requestType = rp.getRequestType();
-        Response response = responseFactory.newResponse(
+        ResponseDelegator response = responseFactory.newResponse(
                 clientSocket, rp, responseFactory.getRoot());
 
         if (requestType.equals("GET"))
@@ -34,7 +36,6 @@ public class SocketHandler implements Handler {
             response.sendPOSTResponse();
 
     }
-
 
     @Override
     public void run() {

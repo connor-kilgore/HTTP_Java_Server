@@ -62,4 +62,21 @@ public class ServerTest {
         }
         server.stop();
     }
+
+    @Test
+    public void addClientToList() throws Exception{
+        String[] args = {"-p", "141", "-r", "."};
+        ArgumentParser ap = new ArgumentParser(args);
+        Server server = new Server(ap, new MockHandlerFactory(),
+                new MockResponseFactory(ap.getRoot()), new MockRPFactory());
+        server.start();
+        Thread.sleep(10);
+
+        try (Socket client = new Socket("localhost", 141)) {
+            Thread.sleep(10);
+
+            assertEquals(server.getClients().size(), 1);
+        }
+        server.stop();
+    }
 }

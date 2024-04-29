@@ -4,24 +4,25 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-public class FileRequest implements Request {
-    public ResponseNode handleRequest(RequestParser rp, String root) {
+public class FileResponse implements Response {
+    public void handleResponse(RequestParser rp, String root) throws IOException {
 
-        if(rp.getPath().startsWith("/ping"))
-            return new PingRequest().handleRequest(rp, root);
+        if (rp.getPath().startsWith("/ping")) {
+            new PingResponse().handleResponse(rp, root);
+            return;
+        }
 
         File contentFile = getFile(root, rp.getPath());
-        if(contentFile.isDirectory())
-            return generateDirectory(contentFile, root);
+        if (contentFile.isDirectory())
+            generateDirectory(contentFile, root).sendResponse(rp.getSocket());
         else if (contentFile.exists()) {
             try {
-                return generateFile(contentFile);
+                generateFile(contentFile).sendResponse(rp.getSocket());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-        else
-            return generateNotFound();
+        } else
+            generateNotFound().sendResponse(rp.getSocket());
     }
 
     public ResponseNode generateFile(File contentFile) throws IOException {
@@ -57,7 +58,7 @@ public class FileRequest implements Request {
 
     private static String listFileInHTML(File file, String root) {
         String path;
-        if(root.equals("."))
+        if (root.equals("."))
             path = file.getPath().split("\\.")[1];
         else
             path = file.getPath().split(root)[1];
